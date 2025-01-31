@@ -4,7 +4,7 @@
 
 Доступ к api https://vilingvum.com/itmo-test/api/request
 
-Точность ответов может упасть, (gpt-4o дороже в несколько раз чем gpt-4o-min), если в ходе тестирования вылезет ошибка, что деньги закончились, напишите в тг, если будет смысл, @VDmitriev1, я пополню баланс
+Точность ответов может упасть, (gpt-4o дороже в несколько раз чем gpt-4o-min), если в ходе тестирования вылезет ошибка, что деньги закончились, напишите в тг, если будет смысл, <a href="https://t.me/VDmitriev1" target="_blank">@VDmitriev1</a>, я пополню баланс
 
 ## Сборка
 
@@ -14,7 +14,9 @@ docker-compose down
 
 ## Проверка работы
 
-![Пример работы запроса]([https://github.com/SlavaDm/itmo-test/blob/master/example-of-usage.png))
+Пример запроса
+
+<img src="https://github.com/SlavaDm/itmo-test/blob/master/example-of-usage.png" target="_blank" />
 
 Отправьте POST-запрос https://vilingvum.com/itmo-test/api/request. Используйте Postman (с curl выходят ошибки, не успевал разобраться):
 
