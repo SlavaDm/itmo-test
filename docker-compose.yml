@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  fastapi-service:
+    build: .
+    container_name: fastapi-baseline
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+      - OPEN_AI_KEY=${OPEN_AI_KEY}
+      - G_API_KEY=${G_API_KEY}
+      - GSE_KEY=${GSE_KEY}
+      - PROXY_OPEN_AI_KEY=${PROXY_OPEN_AI_KEY}

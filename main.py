@@ -1,0 +1,101 @@
+import os
+from dotenv import load_dotenv
+from typing import List
+
+from fastapi import FastAPI, HTTPException
+from pydantic import HttpUrl
+from schemas.request import PredictionRequest, PredictionResponse
+from utils.get_text_content_from_url import get_text_content_from_url
+from utils.google_search import google_search
+from openai import OpenAI
+import re
+
+
+app = FastAPI()
+
+load_dotenv()
+
+OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
+G_API_KEY = os.getenv("G_API_KEY")
+GSE_KEY = os.getenv("GSE_KEY")
+PROXY_OPEN_AI_KEY = os.getenv("PROXY_OPEN_AI_KEY")
+
+
+# client = OpenAI(api_key=OPEN_AI_KEY)
+
+client = OpenAI(
+    api_key=PROXY_OPEN_AI_KEY,
+    base_url="https://api.proxyapi.ru/openai/v1",
+)
+
+
+@app.post("/api/request", response_model=PredictionResponse)
+async def predict(body: PredictionRequest):
+    try:
+        query = body.query
+        lines = query.strip().split("\n")
+        question = lines[0]
+        variants = [line for line in lines[1:]]
+
+        sources: List[HttpUrl] = [
+            item["link"]
+            for item in google_search(question, G_API_KEY, GSE_KEY)["items"]
+        ]
+
+        filtered_sources = [item for item in sources if ".pdf" not in item]
+
+        number_filtered_sources = len(filtered_sources)
+
+        chank_text_limit = 103000 // (
+            1 if number_filtered_sources == 0 else number_filtered_sources
+        )
+
+        text_contents = [
+            get_text_content_from_url(url)[:chank_text_limit]
+            for url in filtered_sources
+        ]
+
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """Ты помощник, тебе на вход дают ****** question: '' ******, $$$$$$ variants: [] $$$$$$, |||||| texts: [] ||||||.
+                    Тебе нужно сначала попытаться обработать question и variants, затем  тебе на основе texts и variants нужно подорбрать точный ответ из variants: [], если вариант подходит, выведи его число в формате 1-10. 
+                    Обоснуй ответ, если нет верного ответа - выведи Ответ: answer=null, иначе Ответ: answer=n, где n число, если ты не уверен, тогда ответ неверный""",
+                },
+                {
+                    "role": "user",
+                    "content": f"""****** question: {question} ******, $$$$$$ variants: {variants} $$$$$$, |||||| texts: {text_contents} ||||||""",
+                },
+            ],
+        )
+
+        gpt_text = completion.choices[0].message.content
+
+        pattern = r"Ответ: answer=(\d+|null)"
+        match_gpt_answer = re.search(pattern, gpt_text)
+
+        answer_value = None
+
+        if match_gpt_answer:
+            answer_value = match_gpt_answer.group(1)
+            if answer_value.isdigit() and 1 <= int(answer_value) <= 10:
+                answer_value = int(answer_value)
+            elif answer_value == "null":
+                answer_value = None
+
+        response = PredictionResponse(
+            id=body.id,
+            answer=answer_value,
+            reasoning=gpt_text,
+            sources=[] if answer_value == None else sources,
+            otherInfo=f"answer_value={answer_value} gpt_text={gpt_text}",
+        )
+        return response
+    except ValueError as e:
+        error_msg = str(e)
+        raise HTTPException(status_code=400, detail=error_msg)
+    except Exception as e:
+        error_msg = str(e)
+        raise HTTPException(status_code=500, detail=error_msg)

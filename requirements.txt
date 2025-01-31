@@ -1,0 +1,8 @@
+fastapi
+pip-chill
+uvicorn
+gunicorn
+OpenAI
+bs4
+requests
+python-dotenv
