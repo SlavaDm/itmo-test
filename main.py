@@ -44,16 +44,9 @@ async def predict(body: PredictionRequest):
 
         filtered_sources = [item for item in sources if ".pdf" not in item]
 
-        number_filtered_sources = len(filtered_sources)
-
-        chank_text_limit = 103000 // (
-            1 if number_filtered_sources == 0 else number_filtered_sources
-        )
-
-        text_contents = [
-            get_text_content_from_url(url)[:chank_text_limit]
-            for url in filtered_sources
-        ]
+        text_contents = " ".join(
+            [get_text_content_from_url(url) for url in filtered_sources]
+        )[:103000]
 
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -94,8 +87,6 @@ async def predict(body: PredictionRequest):
         )
         return response
     except ValueError as e:
-        error_msg = str(e)
-        raise HTTPException(status_code=400, detail=error_msg)
+        raise HTTPException(status_code=400, detail=f"{e}")
     except Exception as e:
-        error_msg = str(e)
-        raise HTTPException(status_code=500, detail=error_msg)
+        raise HTTPException(status_code=500, detail=f"{e}")
