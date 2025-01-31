@@ -20,6 +20,7 @@ G_API_KEY = os.getenv("G_API_KEY")
 GSE_KEY = os.getenv("GSE_KEY")
 PROXY_OPEN_AI_KEY = os.getenv("PROXY_OPEN_AI_KEY")
 
+model = "gpt-4o-mini"
 
 # client = OpenAI(api_key=OPEN_AI_KEY)
 
@@ -50,7 +51,7 @@ async def predict(body: PredictionRequest):
         )[:103000]
 
         completion = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=model,
             messages=[
                 {
                     "role": "system",
@@ -82,7 +83,7 @@ async def predict(body: PredictionRequest):
         response = PredictionResponse(
             id=body.id,
             answer=answer_value,
-            reasoning=gpt_text,
+            reasoning=f"Ответ сгенерирован моделью {model}. {gpt_text}",
             sources=[] if answer_value == None else sources,
             otherInfo=f"answer_value={answer_value} gpt_text={gpt_text}",
         )
