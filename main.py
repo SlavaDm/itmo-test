@@ -33,7 +33,6 @@ client = OpenAI(
 @app.post("/api/request", response_model=PredictionResponse)
 async def predict(body: PredictionRequest):
     try:
-        body = PredictionResponse(body)
         query = body.query
         lines = query.strip().split("\n")
         question = lines[0]
@@ -83,9 +82,8 @@ async def predict(body: PredictionRequest):
         response = PredictionResponse(
             id=body.id,
             answer=answer_value,
-            reasoning=f"Ответ сгенерирован моделью {model}. {gpt_text}",
+            reasoning=f"Ответ сформирован на основе модели {model}. {gpt_text}",
             sources=[] if answer_value == None else sources,
-            otherInfo=f"answer_value={answer_value} gpt_text={gpt_text}",
         )
         return response
     except ValueError as e:
