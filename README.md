@@ -14,7 +14,7 @@ docker-compose down
 
 ## Проверка работы
 
-<img src="https://github.com/SlavaDm/itmo-test/tree/master/example-of-usage.png" width="300">
+![Пример работы запроса]([http://url/to/img.png](https://github.com/SlavaDm/itmo-test/tree/master/example-of-usage.png))
 
 Отправьте POST-запрос https://vilingvum.com/itmo-test/api/request. Используйте Postman (с curl выходят ошибки, не успевал разобраться):
 
