@@ -32,6 +32,7 @@ client = OpenAI(
 @app.post("/api/request", response_model=PredictionResponse)
 async def predict(body: PredictionRequest):
     try:
+        body = PredictionResponse(body)
         query = body.query
         lines = query.strip().split("\n")
         question = lines[0]
